@@ -7,6 +7,7 @@ describe('historical collection observation provenance', () => {
   it('maps the selected older observation rather than the requested date', async () => {
     const observationDate = new Date('2024-04-10T23:59:59.999Z');
     const query = {
+      distinctOn: jest.fn().mockReturnThis(),
       select: jest.fn().mockReturnThis(),
       addSelect: jest.fn().mockReturnThis(),
       where: jest.fn().mockReturnThis(),
@@ -36,6 +37,7 @@ describe('historical collection observation provenance', () => {
       'daily_data.date',
       'observationDate',
     );
+    expect(query.distinctOn).toHaveBeenCalledWith(['daily_data.site_id']);
     expect(query.andWhere).toHaveBeenCalledWith('daily_data.date <= :date', {
       date: new Date('2024-04-15T23:59:59.999Z'),
     });

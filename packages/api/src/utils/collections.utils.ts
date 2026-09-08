@@ -70,7 +70,8 @@ export const getHistoricalCollectionData = async (
   const asOfDate = DateTime.fromISO(date, { zone: 'UTC' }).endOf('day');
   const dailyData = await dailyDataRepository
     .createQueryBuilder('daily_data')
-    .select('DISTINCT ON (daily_data.site_id) daily_data.site_id', 'siteId')
+    .distinctOn(['daily_data.site_id'])
+    .select('daily_data.site_id', 'siteId')
     .addSelect('daily_data.date', 'observationDate')
     .addSelect('daily_data.degree_heating_days', 'degreeHeatingDays')
     .addSelect('daily_data.satellite_temperature', 'satelliteTemperature')
