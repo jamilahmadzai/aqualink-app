@@ -135,9 +135,13 @@ export const siteRequest = createAsyncThunk<
     condition(arg: string | SiteRequestParams, { getState }) {
       const { id, date } = parseSiteRequestArg(arg);
       const {
-        selectedSite: { details, date: currentDate },
+        selectedSite: { details, date: currentDate, currentRequestId },
       } = getState();
-      return `${details?.id}` !== id || currentDate !== date;
+      return (
+        Boolean(currentRequestId) ||
+        `${details?.id}` !== id ||
+        currentDate !== date
+      );
     },
   },
 );
@@ -344,26 +348,34 @@ const selectedSiteSlice = createSlice({
     }),
   },
   extraReducers: (builder) => {
-    builder.addCase(siteRequest.fulfilled, (state, action) => ({
-      ...state,
-      details: action.payload,
-      date: parseSiteRequestArg(action.meta.arg).date,
-      loading: false,
-    }));
-
-    builder.addCase(
-      siteRequest.rejected,
-      (state, action: PayloadAction<SelectedSiteState['error']>) => ({
-        ...state,
-        error: action.payload,
-        loading: false,
-      }),
+    builder.addCase(siteRequest.fulfilled, (state, action) =>
+      state.currentRequestId !== action.meta.requestId
+        ? state
+        : {
+            ...state,
+            details: action.payload,
+            date: parseSiteRequestArg(action.meta.arg).date,
+            loading: false,
+            currentRequestId: undefined,
+          },
     );
 
-    builder.addCase(siteRequest.pending, (state) => ({
+    builder.addCase(siteRequest.rejected, (state, action) =>
+      state.currentRequestId !== action.meta.requestId
+        ? state
+        : {
+            ...state,
+            error: action.payload,
+            loading: false,
+            currentRequestId: undefined,
+          },
+    );
+
+    builder.addCase(siteRequest.pending, (state, action) => ({
       ...state,
       loading: true,
       error: null,
+      currentRequestId: action.meta.requestId,
     }));
 
     builder.addCase(

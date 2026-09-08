@@ -270,7 +270,9 @@ export interface CollectionMetrics {
   sstAnomaly?: number;
 }
 
-export type CollectionDataResponse = Partial<Record<Metrics, number>>;
+export type CollectionDataResponse = Partial<Record<Metrics, number>> & {
+  observationDate?: string;
+};
 
 export type CollectionData = CollectionDataResponse;
 
@@ -414,6 +416,7 @@ export interface SiteRequestParams {
 }
 
 export interface SitesListState {
+  currentRequestId?: string;
   list?: Site[];
   date?: string;
   filters: SiteFilters;
@@ -422,6 +425,7 @@ export interface SitesListState {
 }
 
 export interface SelectedSiteState {
+  currentRequestId?: string;
   draft: SiteUpdateParams | null;
   details?: Site | null;
   date?: string;

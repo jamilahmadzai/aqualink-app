@@ -33,6 +33,7 @@ import { parseLatestData } from 'store/Sites/helpers';
 import { getMiddlePoint } from 'helpers/map';
 import { formatNumber } from 'helpers/numberUtils';
 import { displayTimeInLocalTimezone } from 'helpers/dates';
+import { getHistoricalCardData } from 'helpers/historicalDate';
 import { DateTime, Interval } from 'luxon';
 import Map from './Map';
 import SketchFab from './SketchFab';
@@ -299,48 +300,9 @@ function SiteDetails({
   }, [forecastData, latestData, timeSeriesRange]);
 
   const { videoStream } = site || {};
-  const historicalTimestamp =
-    asOfDate &&
-    DateTime.fromISO(asOfDate, { zone: site?.timezone || 'UTC' })
-      .endOf('day')
-      .toISOString();
-  const historicalCardData: LatestDataASSofarValue | undefined =
-    historicalTimestamp && site?.collectionData
-      ? {
-          ...(site.collectionData.dhw !== undefined
-            ? {
-                dhw: {
-                  value: site.collectionData.dhw,
-                  timestamp: historicalTimestamp,
-                },
-              }
-            : {}),
-          ...(site.collectionData.satelliteTemperature !== undefined
-            ? {
-                satelliteTemperature: {
-                  value: site.collectionData.satelliteTemperature,
-                  timestamp: historicalTimestamp,
-                },
-              }
-            : {}),
-          ...(site.collectionData.tempAlert !== undefined
-            ? {
-                tempAlert: {
-                  value: site.collectionData.tempAlert,
-                  timestamp: historicalTimestamp,
-                },
-              }
-            : {}),
-          ...(site.collectionData.tempWeeklyAlert !== undefined
-            ? {
-                tempWeeklyAlert: {
-                  value: site.collectionData.tempWeeklyAlert,
-                  timestamp: historicalTimestamp,
-                },
-              }
-            : {}),
-        }
-      : undefined;
+  const historicalCardData = asOfDate
+    ? getHistoricalCardData(site?.collectionData)
+    : undefined;
   const isHistoricalView = Boolean(historicalCardData);
   const cardData = historicalCardData || latestDataAsSofarValues;
 

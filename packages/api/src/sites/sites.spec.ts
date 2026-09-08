@@ -130,6 +130,7 @@ export const siteTests = () => {
     );
 
     expect(site.collectionData).toMatchObject({
+      observationDate: date.toJSDate().toISOString(),
       dhw: Number(historicalData.degreeHeatingDays) / 7,
       satelliteTemperature: historicalData.satelliteTemperature,
       tempAlert: historicalData.dailyAlertLevel,
@@ -148,6 +149,7 @@ export const siteTests = () => {
 
     expect(rsp.status).toBe(200);
     expect(rsp.body.collectionData).toMatchObject({
+      observationDate: date.toJSDate().toISOString(),
       dhw: Number(historicalData.degreeHeatingDays) / 7,
       satelliteTemperature: historicalData.satelliteTemperature,
       tempAlert: historicalData.dailyAlertLevel,

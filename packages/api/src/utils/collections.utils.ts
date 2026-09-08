@@ -10,6 +10,7 @@ import { LatestData } from '../time-series/latest-data.entity';
 
 type HistoricalCollectionDataRow = {
   siteId: number;
+  observationDate: Date;
   degreeHeatingDays: number | null;
   satelliteTemperature: number | null;
   dailyAlertLevel: number | null;
@@ -70,6 +71,7 @@ export const getHistoricalCollectionData = async (
   const dailyData = await dailyDataRepository
     .createQueryBuilder('daily_data')
     .select('DISTINCT ON (daily_data.site_id) daily_data.site_id', 'siteId')
+    .addSelect('daily_data.date', 'observationDate')
     .addSelect('daily_data.degree_heating_days', 'degreeHeatingDays')
     .addSelect('daily_data.satellite_temperature', 'satelliteTemperature')
     .addSelect('daily_data.daily_alert_level', 'dailyAlertLevel')
@@ -82,6 +84,7 @@ export const getHistoricalCollectionData = async (
 
   return dailyData.reduce<Record<number, CollectionDataDto>>((acc, data) => {
     const collectionData: CollectionDataDto = {
+      observationDate: data.observationDate,
       ...(data.degreeHeatingDays !== null
         ? { dhw: data.degreeHeatingDays / 7 }
         : {}),

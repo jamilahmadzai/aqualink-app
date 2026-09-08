@@ -61,9 +61,9 @@ export const sitesRequest = createAsyncThunk<
     condition(arg: SitesRequestParams | undefined, { getState }) {
       const { date } = arg || {};
       const {
-        sitesList: { list, date: currentDate },
+        sitesList: { list, date: currentDate, currentRequestId },
       } = getState();
-      return !list || currentDate !== date;
+      return Boolean(currentRequestId) || !list || currentDate !== date;
     },
   },
 );
@@ -107,28 +107,36 @@ const sitesListSlice = createSlice({
     }),
   },
   extraReducers: (builder) => {
-    builder.addCase(
-      sitesRequest.fulfilled,
-      (state, action: PayloadAction<SitesRequestData>) => ({
-        ...state,
-        list: action.payload.list,
-        date: action.payload.date,
-        loading: false,
-      }),
+    builder.addCase(sitesRequest.fulfilled, (state, action) =>
+      state.currentRequestId !== action.meta.requestId
+        ? state
+        : {
+            ...state,
+            list: action.payload.list,
+            date: action.payload.date,
+            loading: false,
+            currentRequestId: undefined,
+          },
     );
 
-    builder.addCase(sitesRequest.rejected, (state, action) => ({
-      ...state,
-      error: action.error.message
-        ? action.error.message
-        : action.error.toString(),
-      loading: false,
-    }));
+    builder.addCase(sitesRequest.rejected, (state, action) =>
+      state.currentRequestId !== action.meta.requestId
+        ? state
+        : {
+            ...state,
+            error: action.error.message
+              ? action.error.message
+              : action.error.toString(),
+            loading: false,
+            currentRequestId: undefined,
+          },
+    );
 
-    builder.addCase(sitesRequest.pending, (state) => ({
+    builder.addCase(sitesRequest.pending, (state, action) => ({
       ...state,
       loading: true,
       error: null,
+      currentRequestId: action.meta.requestId,
     }));
   },
 });
